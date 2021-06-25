@@ -1,0 +1,19 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+div {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    line-height: 30px;
+    border: 1px solid #6b6b6b;
+    float: left;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+br{
+    clear: both;
+}
