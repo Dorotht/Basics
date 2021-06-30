@@ -1,9 +1,11 @@
+const { BinarySearchTree } = require('../utils/index.js');
 
 function MyDict(){
-  var bst = new BinarySearchTree();
+  const bst = new BinarySearchTree();
+
   this.set = function(key, value){
       // 向字典中添加key-value对
-  };
+    };
 
   this.get = function(key){
       // 返回key所对应的value
@@ -14,7 +16,7 @@ function MyDict(){
   }
 };
 
-var md = new MyDict();
+const md = new MyDict();
 md.set('name', 'javascript');
 md.set('age', 20);
 
