@@ -387,6 +387,8 @@ class BinaryAvlTree {
   }
 }
 
+module.exports = BinaryAvlTree;
+
 // const list = [10, 30, 20];
 // const list = [1, 2, 3, 4, 5, 6];
 

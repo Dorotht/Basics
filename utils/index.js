@@ -10,6 +10,7 @@ const BinaryTree = require('./BinaryTree.js');
 const MinHeap = require('./MinHeap.js');
 const HuffmanTree = require('./HuffmanTree.js');
 const BinarySearchTree = require('./BinarySearchTree.js');
+const BinaryAvlTree = require('./BinaryAvlTree.js');
 
 /**
  * 生成睡随机数字
@@ -36,4 +37,5 @@ module.exports = {
   MaxHeap,
   HuffmanTree,
   BinarySearchTree,
+  BinaryAvlTree
 };
