@@ -95,8 +95,8 @@ class BinaryAvlTree {
 
         newNode.parent = node;
 
-        // 计算当前节点的平衡因子
-        this.__treeAds(node);
+        // 插入时的平衡化旋转
+        this.__balancedRotationDuringInsertion(node);
 
         return true;
       }
@@ -110,8 +110,8 @@ class BinaryAvlTree {
 
         newNode.parent = node;
 
-        // 计算当前节点的平衡因子
-        this.__treeAds(node);
+        // 插入时的平衡化旋转
+        this.__balancedRotationDuringInsertion(node);
 
         return true;
       }
@@ -119,11 +119,40 @@ class BinaryAvlTree {
   }
 
   /**
-   * 计算当前的平衡因子
+   * 插入时的平衡化旋转
    *
    *    对于一棵AVL树，它的任意一个节点的平衡因子都只能取 -1， 0， 1中的一个，
    * 如果节点的平衡因子绝对值大于1，则AVL数失去了平衡性。
    *
+   * @param {*} node
+   * @memberof BinaryAvlTree
+   */
+  __balancedRotationDuringInsertion(node) {
+    // 获取平衡因子
+    const abs = this.__treeAds(node);
+
+    // 把计算得出的平衡因子赋值给当前节点
+    node.abs = abs;
+
+    // 父节点的平衡因子为0，那么万事大吉，插入的这个新节点没有导致不平衡
+    if (abs === 0) {
+      return false;
+    } else if (abs === 1 || abs === -1) {
+      // 父节点的平衡因子变为-1或者1，只能说明这棵子树是平衡的，但这棵子树的高度增加了1，
+      // 会影响到更高层的节点，因此要继续向上遍历更新父节点的平衡因子，直到找到平衡因子
+      // 变为2或-2的节点，或者遍历到整棵树的根节点
+      if (node.parent) this.__balancedRotationDuringInsertion(node.parent);
+    } else {
+      // 父节点的平衡因子变为2或者-2， 那么这个父节点就不再平衡，需要进行平衡化调整
+      const newNode = this.__insertBalancedRotation(node);
+
+      // 从新的当前节点开始向下更新所有节点的平衡因子
+      this.__treeAllAds(newNode);
+    }
+  }
+
+  /**
+   * 计算树的平衡因子
    *
    * @param {*} node
    * @memberof BinaryAvlTree
@@ -136,23 +165,22 @@ class BinaryAvlTree {
     const leftChildHeight = this.__treeHeight(node.leftChild);
 
     // 右子树高度减去左子树高度就是当前节点的平衡因子了
-    const abs = rightChildHeight - leftChildHeight;
+    return rightChildHeight - leftChildHeight;
+  }
 
-    node.abs = abs;
+  /**
+   * 从新的当前节点开始向下更新所有节点的平衡因子。
+   *
+   * @param {*} node
+   * @memberof BinaryAvlTree
+   */
+  __treeAllAds(node) {
+    if (node === null) return false;
 
-    // 父节点的平衡因子为0，那么万事大吉，插入的这个新节点没有导致不平衡
-    if (abs === 0) {
-      return false;
-    } else if (abs === 1 || abs === -1) {
-      // 父节点的平衡因子变为-1或者1，只能说明这棵子树是平衡的，但这棵子树的高度增加了1，
-      // 会影响到更高层的节点，因此要继续向上遍历更新父节点的平衡因子，直到找到平衡因子
-      // 变为2或-2的节点，或者遍历到整棵树的根节点
-      if (node.parent) this.__treeAds(node.parent);
-    } else {
-      // 父节点的平衡因子变为2或者-2， 那么这个父节点就不再平衡，需要进行平衡化调整
-      this.__insertBalancedRotation(node);
-      // node = node.rightChild
-    }
+    node.abs = this.__treeAds(node);
+
+    this.__treeAllAds(node.leftChild);
+    this.__treeAllAds(node.rightChild);
   }
 
   /**
@@ -188,26 +216,22 @@ class BinaryAvlTree {
   __insertBalancedRotation(node) {
     // 当不平衡节点平衡因子为2，其右孩子平衡因子为1时，发生左单旋转。
     if (node.abs === 2 && node.rightChild.abs === 1) {
-      this.__leftRotation(node.rightChild);
-      return true;
+      return this.__leftRotation(node.rightChild);
     }
 
     // 当不平衡节点的平衡因子为-2，左孩子平衡因子为-1时进行右单翻转。
     if (node.abs === -2 && node.leftChild.abs === -1) {
-      this.__rightRotation(node.leftChild);
-      return true;
+      return this.__rightRotation(node.leftChild);
     }
 
     // 当不平衡节点的平衡因子为-2，左孩子平衡因子为1的时候发生先左后右双旋转。
     if (node.abs === -2 && node.leftChild.abs === 1) {
-      this.__leftRightRotation(node.leftChild.rightChild);
-      return true;
+      return this.__leftRightRotation(node.leftChild.rightChild);
     }
 
     // 当不平衡节点的平衡因子为2，右孩子的平衡因子为-1时，进行先右后左双旋转。
     if (node.abs === 2 && node.rightChild.abs === -1) {
-      this.__rightLeftRotation(node.rightChild.leftChild);
-      return true;
+      return this.__rightLeftRotation(node.rightChild.leftChild);
     }
   }
 
@@ -228,6 +252,8 @@ class BinaryAvlTree {
     cur.leftChild = parent;
 
     this.__rotationPublic(cur, parent);
+
+    return cur;
   }
 
   /**
@@ -247,6 +273,8 @@ class BinaryAvlTree {
     cur.rightChild = parent;
 
     this.__rotationPublic(cur, parent);
+
+    return cur;
   }
 
   /**
@@ -299,6 +327,8 @@ class BinaryAvlTree {
     cur.rightChild = parent.parent;
 
     this.__rightLeftRotationPublic(cur, parent);
+
+    return cur;
   }
 
   /**
@@ -324,6 +354,8 @@ class BinaryAvlTree {
     cur.leftChild = parent.parent;
 
     this.__rightLeftRotationPublic(cur, parent);
+
+    return cur;
   }
 
   /**
@@ -416,15 +448,29 @@ class BinaryAvlTree {
       } else if (node.rightChild) {
         // 第三种情况
         this.__linkParent(node.parent, node, node.rightChild);
+
+        // 删除时的平衡化处理
+        this.__balancedRotationDuringRemove(node.parent);
       } else {
         // 第二种情况
         this.__linkParent(node.parent, node, node.leftChild);
+
+        // 删除时的平衡化处理
+        this.__balancedRotationDuringRemove(node.parent);
       }
 
       return true;
     }
   }
 
+  /**
+   * 连接父节点和子节点
+   *
+   * @param {*} parent
+   * @param {*} node
+   * @param {*} nextNode
+   * @memberof BinarySearchTree
+   */
   __linkParent(parent, node, nextNode) {
     if (parent === null) {
       this._root = nextNode;
@@ -436,6 +482,59 @@ class BinaryAvlTree {
       parent.leftChild = nextNode;
     } else {
       parent.rightChild = nextNode;
+    }
+  }
+
+  /**
+   * 删除时的平衡化处理
+   *
+   *    由于删除了一个节点，它的parent的平衡因子会发生变化，不止是被删除节点的paren它的平衡因子会发生变化，
+   * 这个被删除节点的所有祖先节点的平衡因子都可能发生变化。
+   *
+   *    如果只观察被删除节点的parent的平衡因子的变化情况，有三种情况需要考虑
+   *
+   *  1、parent平衡因子从0变成1 或者-1。 这种情况下，这棵树依然是平衡的，因此不需要做任何调整。
+   *  2、parent平衡因子从-1或1 变成0。原本是平衡的，删除后依然是平衡的，这一点非常有迷惑性，看上去不需要做
+   * 任何调整，但是，整棵树的高度已经减1，因此要继续向上考察父节点的平衡状态。父节点平衡，但仍需要继续向上
+   * 考察祖先节点的平衡因子变化情况。
+   *  3、parent平衡因子从1变成2 或者从-1变成-2
+   *
+   * @param {*} node
+   * @memberof BinaryAvlTree
+   */
+  __balancedRotationDuringRemove(node) {
+    const oldAds = node.abs
+    const newAds = this.__treeAds(node);
+
+    node.abs = newAds
+
+    // 1、这种情况下，这棵树依然是平衡的，因此不需要做任何调整
+    if ((oldAds === 0 && oldAds === 1) || newAds === -1) {
+      return true;
+    }
+
+    // 2、这种情况下，要继续向上考察父节点的平衡状态
+    if ((oldAds === 1 || oldAds === -1) && newAds === 0) {
+      if (node.parent) this.__balancedRotationDuringRemove(node.parent)
+      return true;
+    }
+
+    // 以下处理第3种情况
+    this.__removeBalancedRotation(node)
+  }
+
+  /**
+   *  删除时的平衡化旋转
+   *
+   * @param {*} node
+   * @memberof BinaryAvlTree
+   */
+  __removeBalancedRotation(node) {
+    console.log(node.data, node.abs, node.rightChild.abs)
+
+    if (node.abs === 2 && node.rightChild.abs === 0) {
+
+      return true
     }
   }
 
@@ -488,16 +587,20 @@ class BinaryAvlTree {
 
 module.exports = BinaryAvlTree;
 
-// const list = [1, 2, 3];
-// const list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+// const list = [1, 2, 3, 5];
+// // const list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 // const bt = new BinaryAvlTree();
 
 // console.time('time');
 // bt.init(list);
 // console.timeEnd('time');
-// bt.levelOrder(bt.getRoot());
+// // bt.levelOrder(bt.getRoot());
 // console.log('-------------------------------------------------------');
-// bt.remove(2);
 
+// bt.insert(4)
+
+// // console.log(bt.getRoot());
+
+// bt.remove(1);
 // bt.levelOrder(bt.getRoot());
