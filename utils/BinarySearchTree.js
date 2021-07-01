@@ -173,7 +173,7 @@ class BinarySearchTree {
    *    对于第一种情况, 最为简单, 只需要让其父节点指向它的指针指向null即可
    *    对于第二种情况, 用左孩子代替它的位置
    *    对于第三种情况, 用右孩子代替它的位置
-   *    对于第三种情况, 稍微有些复杂, 首先, 去被删除节点的左右子树中找到中序遍历下的第一个节点, 假设
+   *    对于第四 种情况, 稍微有些复杂, 首先, 去被删除节点的左右子树中找到中序遍历下的第一个节点, 假设
    * 节点的data是x, 讲被删除的节点替换成x, 而后, 在删除的节点的右子树中执行删除x的操作
    *
    *
@@ -183,9 +183,11 @@ class BinarySearchTree {
   __removeData(node, data) {
     if (node === null) return false;
 
+    // 删除节点小于当前节点，向左查找
     if (node.data > data) {
       return this.__removeData(node.leftChild, data);
     } else if (node.data < data) {
+      // 删除节点小于当前节点，向右查找
       return this.__removeData(node.rightChild, data);
     } else {
       if (node.leftChild && node.rightChild) {

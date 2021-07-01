@@ -95,6 +95,7 @@ class BinaryAvlTree {
 
         newNode.parent = node;
 
+        // 计算当前节点的平衡因子
         this.__treeAds(node);
 
         return true;
@@ -109,6 +110,7 @@ class BinaryAvlTree {
 
         newNode.parent = node;
 
+        // 计算当前节点的平衡因子
         this.__treeAds(node);
 
         return true;
@@ -140,7 +142,7 @@ class BinaryAvlTree {
 
     // 父节点的平衡因子为0，那么万事大吉，插入的这个新节点没有导致不平衡
     if (abs === 0) {
-      return;
+      return false;
     } else if (abs === 1 || abs === -1) {
       // 父节点的平衡因子变为-1或者1，只能说明这棵子树是平衡的，但这棵子树的高度增加了1，
       // 会影响到更高层的节点，因此要继续向上遍历更新父节点的平衡因子，直到找到平衡因子
@@ -202,6 +204,7 @@ class BinaryAvlTree {
       return true;
     }
 
+    // 当不平衡节点的平衡因子为2，右孩子的平衡因子为-1时，进行先右后左双旋转。
     if (node.abs === 2 && node.rightChild.abs === -1) {
       this.__rightLeftRotation(node.rightChild.leftChild);
       return true;
@@ -246,6 +249,13 @@ class BinaryAvlTree {
     this.__rotationPublic(cur, parent);
   }
 
+  /**
+   * 左单旋转 | 右单旋转 公共方法
+   *
+   * @param {*} cur
+   * @param {*} parent
+   * @memberof BinaryAvlTree
+   */
   __rotationPublic(cur, parent) {
     // 如果祖父不存在, 把根节点指向当前节点
     if (!parent.parent) {
@@ -316,6 +326,13 @@ class BinaryAvlTree {
     this.__rightLeftRotationPublic(cur, parent);
   }
 
+  /**
+   * 先左后右双旋转 | 先右后左双旋转 公共方法
+   *
+   * @param {*} cur
+   * @param {*} parent
+   * @memberof BinaryAvlTree
+   */
   __rightLeftRotationPublic(cur, parent) {
     // 曾祖父节点不存在，把当前节点赋给根节点
     if (!parent.parent.parent) {
@@ -338,6 +355,88 @@ class BinaryAvlTree {
     // 父节点已经变成当前节点的子树,
     // 需要把父节点的父节点指向当前节点
     parent.parent = cur;
+  }
+
+  /**
+   * 返回删除结果
+   *
+   * @param {*} data
+   * @returns 返回删除结果
+   * @memberof BinarySearchTree
+   */
+  remove(data) {
+    return this.__removeData(this._root, data);
+  }
+
+  /**
+   * 查找删除的元素, 并且删除
+   *
+   * 删除一个节点时，要考虑到必须将被删除节点的子孙节点连接到树上，同时保证二叉搜索树的性质。
+   *
+   * 根据被删除节点的左右子孩子，可以总结一下几种情况：
+   *  1.被删除节点左右孩子都不存在
+   *  2.被删除的节点没有右孩子
+   *  3.被删除的节点没有左孩子
+   *  4.被删除的节点左右孩子都存在
+   *
+   *    对于第一种情况, 最为简单, 只需要让其父节点指向它的指针指向null即可
+   *    对于第二种情况, 用左孩子代替它的位置
+   *    对于第三种情况, 用右孩子代替它的位置
+   *    对于第四种情况, 稍微有些复杂, 首先, 去被删除节点的左右子树中找到中序遍历下的第一个节点, 假设
+   * 节点的data是x, 讲被删除的节点替换成x, 而后, 在删除的节点的右子树中执行删除x的操作
+   *
+   * @param {*} node
+   * @param {*} data
+   * @memberof BinaryAvlTree
+   */
+  __removeData(node, data) {
+    if (node === null) return false;
+
+    // 删除节点小于当前节点，向左查找
+    if (node.data > data) {
+      this.__removeData(node.leftChild, data);
+    } else if (node.data < data) {
+      // 删除节点小于当前节点，向右查找
+      this.__removeData(node.rightChild, data);
+    } else {
+      // 第四种情况
+      if (node.leftChild && node.rightChild) {
+        let cur = node.rightChild;
+
+        // 遍历找到中序遍历下的第一个节点
+        while (cur.leftChild) {
+          cur = cur.leftChild;
+        }
+
+        // 被删除的节点等于中序下的第一个节点
+        node.data = cur.data;
+
+        // 去右子树里删除中序下的第一个节点
+        return this.__removeData(node.rightChild, cur.data);
+      } else if (node.rightChild) {
+        // 第三种情况
+        this.__linkParent(node.parent, node, node.rightChild);
+      } else {
+        // 第二种情况
+        this.__linkParent(node.parent, node, node.leftChild);
+      }
+
+      return true;
+    }
+  }
+
+  __linkParent(parent, node, nextNode) {
+    if (parent === null) {
+      this._root = nextNode;
+      this._root.parent = null;
+      return;
+    }
+
+    if (parent.leftChild && parent.leftChild.data === node.data) {
+      parent.leftChild = nextNode;
+    } else {
+      parent.rightChild = nextNode;
+    }
   }
 
   /**
@@ -389,20 +488,16 @@ class BinaryAvlTree {
 
 module.exports = BinaryAvlTree;
 
-// const list = [10, 30, 20];
-// const list = [1, 2, 3, 4, 5, 6];
+// const list = [1, 2, 3];
+// const list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 // const bt = new BinaryAvlTree();
 
+// console.time('time');
 // bt.init(list);
-
-// bt.insert(9);
-// bt.insert(9.1);
-// bt.insert(11);
-// bt.insert(12);
-// bt.insert(10.1);
-// bt.insert(10.2);
-// bt.insert(10.3);
-// bt.insert(10.4);
+// console.timeEnd('time');
+// bt.levelOrder(bt.getRoot());
+// console.log('-------------------------------------------------------');
+// bt.remove(2);
 
 // bt.levelOrder(bt.getRoot());
