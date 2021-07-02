@@ -493,20 +493,22 @@ class BinaryAvlTree {
    *
    *    如果只观察被删除节点的parent的平衡因子的变化情况，有三种情况需要考虑
    *
-   *  1、parent平衡因子从0变成1 或者-1。 这种情况下，这棵树依然是平衡的，因此不需要做任何调整。
-   *  2、parent平衡因子从-1或1 变成0。原本是平衡的，删除后依然是平衡的，这一点非常有迷惑性，看上去不需要做
-   * 任何调整，但是，整棵树的高度已经减1，因此要继续向上考察父节点的平衡状态。父节点平衡，但仍需要继续向上
+   *    1、parent平衡因子从0变成1 或者-1。 这种情况下，这棵树依然是平衡的，因此不需要做任何调整。
+   *
+   *    2、parent平衡因子从-1或1 变成0。原本是平衡的，删除后依然是平衡的，这一点非常有迷惑性，看上去不需要
+   * 做任何调整，但是，整棵树的高度已经减1，因此要继续向上考察父节点的平衡状态。父节点平衡，但仍需要继续向上
    * 考察祖先节点的平衡因子变化情况。
+   *
    *  3、parent平衡因子从1变成2 或者从-1变成-2
    *
    * @param {*} node
    * @memberof BinaryAvlTree
    */
   __balancedRotationDuringRemove(node) {
-    const oldAds = node.abs
+    const oldAds = node.abs;
     const newAds = this.__treeAds(node);
 
-    node.abs = newAds
+    node.abs = newAds;
 
     // 1、这种情况下，这棵树依然是平衡的，因此不需要做任何调整
     if ((oldAds === 0 && oldAds === 1) || newAds === -1) {
@@ -515,12 +517,12 @@ class BinaryAvlTree {
 
     // 2、这种情况下，要继续向上考察父节点的平衡状态
     if ((oldAds === 1 || oldAds === -1) && newAds === 0) {
-      if (node.parent) this.__balancedRotationDuringRemove(node.parent)
+      if (node.parent) this.__balancedRotationDuringRemove(node.parent);
       return true;
     }
 
     // 以下处理第3种情况
-    this.__removeBalancedRotation(node)
+    this.__removeBalancedRotation(node);
   }
 
   /**
@@ -530,11 +532,50 @@ class BinaryAvlTree {
    * @memberof BinaryAvlTree
    */
   __removeBalancedRotation(node) {
-    console.log(node.data, node.abs, node.rightChild.abs)
+    // console.log('__removeBalancedRotation', node.data, node.abs, node.leftChild.abs);
 
     if (node.abs === 2 && node.rightChild.abs === 0) {
+      return this.__leftRotation(node.rightChild);
+    }
 
-      return true
+    if (node.abs === -2 && node.leftChild.abs === 0) {
+      return this.__rightRotation(node.leftChild);
+    }
+
+    if (node.abs === 2 && node.rightChild.abs === 1) {
+      const retNode = this.__leftRotation(node.rightChild);
+
+      // 节点删除后, 树的高度发生变化, 因此要向上考察节点当前节点的祖先节点的平衡情况。
+      if (retNode.parent) this.__balancedRotationDuringRemove(retNode);
+
+      return retNode;
+    }
+
+    if (node.abs === -2 && node.leftChild.abs === -1) {
+      const retNode = this.__rightRotation(node.leftChild);
+
+      // 节点删除后, 树的高度发生变化, 因此要向上考察节点当前节点的祖先节点的平衡情况。
+      if (retNode.parent) this.__balancedRotationDuringRemove(retNode);
+
+      return retNode;
+    }
+
+    if (node.abs === 2 && node.rightChild.abs === -1) {
+      const retNode = this.__rightLeftRotation(node.rightChild.leftChild);
+
+      // 节点删除后, 树的高度发生变化, 因此要向上考察节点当前节点的祖先节点的平衡情况。
+      if (retNode.parent) this.__balancedRotationDuringRemove(retNode);
+
+      return retNode;
+    }
+
+    if (node.abs === -2 && node.leftChild.abs === 1) {
+      const retNode = this.__leftRightRotation(node.leftChild.rightChild);
+
+      // 节点删除后, 树的高度发生变化, 因此要向上考察节点当前节点的祖先节点的平衡情况。
+      if (retNode.parent) this.__balancedRotationDuringRemove(retNode);
+
+      return retNode;
     }
   }
 
@@ -587,20 +628,23 @@ class BinaryAvlTree {
 
 module.exports = BinaryAvlTree;
 
-// const list = [1, 2, 3, 5];
-// // const list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+// const list = [9, 8, 7];
+// const list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 // const bt = new BinaryAvlTree();
 
 // console.time('time');
 // bt.init(list);
 // console.timeEnd('time');
-// // bt.levelOrder(bt.getRoot());
+// bt.levelOrder(bt.getRoot());
 // console.log('-------------------------------------------------------');
 
-// bt.insert(4)
+// bt.insert(6);
+// bt.insert(7.5);
+// bt.insert(10);
+// bt.insert(7.6);
 
-// // console.log(bt.getRoot());
-
-// bt.remove(1);
+// bt.remove(9);
 // bt.levelOrder(bt.getRoot());
+
+// console.log(bt.getRoot());
