@@ -12,7 +12,7 @@ class Node {
 }
 
 /**
- * 单独链表
+ * 单向链表
  *
  * @class LinkedList
  */
@@ -158,6 +158,21 @@ class LinkedList {
     this._tail = cur;
 
     this._length = this._length - 1;
+  }
+
+  // 搜索
+  search(key) {
+    let index = -1;
+    let curr_node = this._head;
+    while (curr_node) {
+      index += 1;
+      if (curr_node.key === key) {
+        return curr_node;
+      } else {
+        curr_node = curr_node.next;
+      }
+    }
+    return null;
   }
 
   // 返回指定元素的索引,如果没有,返回-1
