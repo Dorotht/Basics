@@ -1,0 +1,103 @@
+/**
+ * Compose `middleware` returning
+ * a fully valid middleware comprised
+ * of all those which are passed.
+ *
+ * @param {Array} middleware
+ * @return {Function}
+ * @api public
+ */
+// function compose(middleware) {
+//   // 省略部分代码
+//   return function (context, next) {
+//     console.log('context', context)
+//     console.log('next', next)
+
+//     // last called middleware #
+//     let index = -1;
+//     return dispatch(0);
+//     function dispatch(i) {
+
+//       if (i <= index) {
+//         return Promise.reject(new Error('next() called multiple times'));
+//       }
+
+//       index = i;
+
+//       let fn = middleware[i];
+
+//       if (i === middleware.length) fn = next;
+
+//       if (!fn) return Promise.resolve();
+
+//       try {
+//         return Promise.resolve(fn(context, dispatch.bind(null, i + 1)));
+//       } catch (err) {
+//         return Promise.reject(err);
+//       }
+//     }
+//   };
+// }
+
+// function wait(ms) {
+//   return new Promise((resolve) => setTimeout(resolve, ms || 1));
+// }
+
+// const arr = [];
+// const stack = [];
+
+// // type Middleware<T> = (context: T, next: Koa.Next) => any;
+// stack.push(async (context, next) => {
+//   arr.push(1);
+//   await wait(1);
+//   await next();
+//   await wait(1);
+//   arr.push(6);
+// });
+
+// stack.push(async (context, next) => {
+//   arr.push(2);
+//   await wait(1);
+//   await next();
+//   await wait(1);
+//   arr.push(5);
+// });
+
+// stack.push(async (context, next) => {
+//   arr.push(3);
+//   await wait(1);
+//   await next();
+//   await wait(1);
+//   arr.push(4);
+// });
+
+// const handle = async () => {
+//   const res = await compose(stack)({});
+
+//   console.log('res', res);
+//   console.log('arr', arr);
+// };
+
+
+// handle()
+
+
+const compose = (...fns) => (...args) => {
+  console.log('---', args)
+  console.log('---', fns)
+  return fns.reduceRight((val, fn) => {
+    console.log('val', val)
+    console.log('fn', fn)
+
+    return fn.apply(null, [].concat(val))
+  }, args);
+}
+
+const f = x => x + 1;
+const g = x => x * 2;
+const t = (x, y) => x + y;
+
+let fgt = compose(f, g, t);
+
+// 3 -> 6 -> 7
+console.log('--', fgt(1, 2))
